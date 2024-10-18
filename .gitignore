@@ -2,6 +2,7 @@
 # but for now let's not upload the model itself
 models/
 uploads/
+data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

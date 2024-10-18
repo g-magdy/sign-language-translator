@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Upload Your Image{% endblock title %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h1 class="card-title text-center mb-4">Upload an Image</h1>
+            <form method="POST" action="/classify" enctype="multipart/form-data">
+              <div class="mb-3">
+                <input type="file" class="form-control" name="file" accept="image/*">
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Upload</button>
+              </div>
+            </form>
+
+            <!-- Display the processed image if it exists -->
+            {% if show_result %}
+            <div class="mt-4 text-center">
+                <h5>Prediction Result:</h5>
+                <p>Predicted Class: {{ predicted_class }}</p>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}
