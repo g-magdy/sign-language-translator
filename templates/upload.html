@@ -15,6 +15,15 @@
                 <button type="submit" class="btn btn-primary">Upload</button>
               </div>
             </form>
+
+            <!-- Display the processed image if it exists -->
+            {% if filename %}
+            <div class="mt-4 text-center">
+              <h5>Processed Image:</h5>
+              <img src="{{ url_for('uploaded_file', filename=filename) }}" class="img-fluid" alt="Processed Image">
+            </div>
+            {% endif %}
+
           </div>
         </div>
       </div>
