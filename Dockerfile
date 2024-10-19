@@ -16,10 +16,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make port 80 available to the world outside this container
-EXPOSE 80
-
-# Define environment variable
-ENV NAME World
+EXPOSE 5000
 
 # Run the application
 CMD ["python", "app.py"]
