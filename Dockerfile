@@ -22,4 +22,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run the application
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:80"]
+CMD ["python", "app.py"]
