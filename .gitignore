@@ -1,6 +1,5 @@
 # I will find a way to use git large file storage (git lfs)
 # but for now let's not upload the model itself
-models/
 uploads/
 data/
 # Byte-compiled / optimized / DLL files
