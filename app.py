@@ -8,9 +8,13 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 vgg19_model = load_model('./models/testvgg_19.h5')
-arsl_model = load_model('./models/arsl_model_2.h5')
-arsl_model = load_model('./models/asl_model_2.h5')
-arabic_onehot_encoder = joblib.load("./models/arabic_onehot_encoder.pkl")
+
+arabic_model = load_model('./models/arabic_model.h5')
+arabic_onehot_encoder = joblib.load("./models/arabic_encoder.pkl")
+
+
+english_model = load_model('./models/english_model.h5')
+english_onehot_encoder = joblib.load("./models/english_encoder.pkl")
 
 def get_label(code):
     labels = {
@@ -115,10 +119,10 @@ def classify_img():
             
             return render_template("classify.html", show_result=True, predicted_class=predicted_class)
     
-@app.route("/arsl", methods=['GET', 'POST'])
-def arsl_classification():
+@app.route("/arabic", methods=['GET', 'POST'])
+def arabic_classification():
     if request.method == "GET":
-        return render_template("arsl_classification.html", show_result=False)
+        return render_template("arabic_classification.html", show_result=False)
     else:
         
         if 'file' not in request.files:
@@ -143,18 +147,72 @@ def arsl_classification():
             
             image_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
             
+            # let me overwrite the already upoaded image
+            edges_img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            cv2.imwrite(filename=edges_img_path, img=edges)
+            # end test
+            
             image_batch = np.expand_dims(image_rgb, axis=0)
             
-            prediction = arsl_model.predict(image_batch)
+            prediction = arabic_model.predict(image_batch)
             predicted_class_index = np.argmax(prediction, axis=1)  # Get the index of the class with the highest probability
+            
             
             predicted_class_one_hot = np.zeros((predicted_class_index.size, arabic_onehot_encoder.categories_[0].size))
             predicted_class_one_hot[np.arange(predicted_class_index.size), predicted_class_index] = 1
-            predicted_class_label = arabic_onehot_encoder.inverse_transform(predicted_class_one_hot)
+            predicted_class_label = arabic_onehot_encoder.inverse_transform(predicted_class_one_hot)[0][0]
             
-            print(arabic_onehot_encoder.categories_)
             
-            return render_template("arsl_classification.html", show_result = True, predicted_class=predicted_class_label)
+            return render_template("arabic_classification.html", show_result = True, predicted_class=predicted_class_label, edges_image=filename)
+        
+
+@app.route("/english", methods=['GET', 'POST'])
+def english_classification():
+    if request.method == "GET":
+        return render_template("english_classification.html", show_result=False)
+    else:
+        
+        if 'file' not in request.files:
+            return "No file was uploaded"
+        
+        file = request.files['file']
+        
+        if file.filename == "":
+            return "No file was selected"
+        
+        if file and file_is_allowed(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # This should not be done in real servers
+            # but for the sake of simplicity
+            file.save(filepath)
+            
+            image = cv2.imread(filepath)
+            resized_img = cv2.resize(image, (224, 224))
+            edges = cv2.Canny(resized_img, threshold1=70, threshold2=70)
+            
+            image_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+            
+            # let me overwrite the already upoaded image
+            edges_img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            cv2.imwrite(filename=edges_img_path, img=edges)
+            # end test
+            
+            image_batch = np.expand_dims(image_rgb, axis=0)
+            
+            prediction = english_model.predict(image_batch)
+            predicted_class_index = np.argmax(prediction, axis=1)  # Get the index of the class with the highest probability
+            
+            
+            predicted_class_one_hot = np.zeros((predicted_class_index.size, english_onehot_encoder.categories_[0].size))
+            predicted_class_one_hot[np.arange(predicted_class_index.size), predicted_class_index] = 1
+            predicted_class_label = english_onehot_encoder.inverse_transform(predicted_class_one_hot)[0][0]
+            
+            
+            return render_template("english_classification.html", show_result = True, predicted_class=predicted_class_label, edges_image=filename)
+        
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=4000)

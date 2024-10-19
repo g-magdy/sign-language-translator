@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 {% block title %}Arabic{% endblock title %}
 {% block content %}
-<h1>Arabic Sign Language Classification</h1>
 <div class="container mt-5">
+    <h1 class="text-center text-primary my-3">English Sign Language Classification</h1>
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h1 class="card-title text-center mb-4">Upload an Image</h1>
-            <form method="POST" action="/arsl" enctype="multipart/form-data">
+            
+            <form method="POST" action="/english" enctype="multipart/form-data">
               <div class="mb-3">
                 <input type="file" class="form-control" name="file" accept="image/*">
               </div>
@@ -20,9 +20,15 @@
             <!-- Display the processed image if it exists -->
             {% if show_result %}
             <div class="mt-4 text-center">
+                <h5>Canny Edges of {{edges_image}}</h5>
+                <img src="{{ url_for('uploaded_file', filename=edges_image) }}" class="img-fluid" alt="Edges image">
+            </div>
+            
+            <div class="mt-4 text-center">
                 <h5>Prediction Result:</h5>
                 <p>Predicted Class: {{ predicted_class }}</p>
             </div>
+
             {% endif %}
 
           </div>
