@@ -102,7 +102,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)            
 
                 
-@app.route("/<language>", methods=['GET', 'POST'])
+@app.route("/img/<language>", methods=['GET', 'POST'])
 def classification(language):
     
     if language not in ['arabic', 'english']:
