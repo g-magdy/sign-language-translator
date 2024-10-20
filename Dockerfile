@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 RUN git lfs install
 
 # Clone your GitHub repository inside the container
-RUN git clone https://github.com/yourusername/your-repo.git /app
+RUN git clone https://github.com/g-magdy/sign-language-translator.git /app
 
 # Change directory to /app
 WORKDIR /app
