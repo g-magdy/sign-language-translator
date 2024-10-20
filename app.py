@@ -15,16 +15,29 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import joblib
 import numpy as np
-from tensorflow.keras.models import load_model #type: ignore
+from tensorflow.keras.models import load_model
 from transformers import MarianMTModel, MarianTokenizer
+
+arabic_model_path = './models/arabic_model.h5'
+english_model_path = './models/english_model.h5'
+
+if os.path.exists(arabic_model_path):
+    print(f"Found Arabic model at: {arabic_model_path}, size: {os.path.getsize(arabic_model_path)} bytes")
+else:
+    raise (f"Arabic model file not found: {arabic_model_path}")
+
+if os.path.exists(english_model_path):
+    print(f"Found English model at: {english_model_path}, size: {os.path.getsize(arabic_model_path)} bytes")
+else:
+    raise (f"English model file not found: {english_model_path}")
+
+
+arabic_encoder = joblib.load("./models/arabic_encoder.pkl")
+english_encoder = joblib.load("./models/english_encoder.pkl")
 
 
 arabic_model = load_model('./models/arabic_model.h5')
-arabic_encoder = joblib.load("./models/arabic_encoder.pkl")
-
-
 english_model = load_model('./models/english_model.h5')
-english_encoder = joblib.load("./models/english_encoder.pkl")
 
 
 UPLOAD_FOLDER = 'uploads/'
@@ -167,4 +180,4 @@ def translate_word(language):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=8000)
