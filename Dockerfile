@@ -7,15 +7,19 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . .
 
-# Install system dependencies for OpenCV
+# Install system dependencies for OpenCV and Git LFS in one command
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
+    git-lfs \
     && rm -rf /var/lib/apt/lists/*
+
+# Install git-lfs and pull large files
+RUN git lfs install
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
+# Make port 5000 available to the world outside this container
 EXPOSE 5000
 
 # Run the application
