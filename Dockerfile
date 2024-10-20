@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     git \
     git-lfs \
     libgl1-mesa-glx \
+    git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
 # Initialize Git LFS
