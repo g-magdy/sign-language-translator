@@ -1,3 +1,13 @@
+'''
+1. mapping characters
+2. word translation
+3. sentence translation
+
+4. 
+'''
+
+
+
 import os
 import cv2
 from flask import Flask, render_template, request, url_for, send_from_directory
@@ -7,7 +17,6 @@ import joblib
 import numpy as np
 from tensorflow.keras.models import load_model #type: ignore
 from transformers import MarianMTModel, MarianTokenizer
-from consts import single_char_translations
 
 
 arabic_model = load_model('./models/arabic_model.h5')
@@ -129,6 +138,33 @@ def classification(language):
             
             return render_template(f"classification.html", show_result = True, predicted_class=predicted_class_label, edges_image=name, language=language)
         
+
+@app.route("/word/<language>", methods=['GET', 'POST'])
+def translate_word(language):
+    
+    if language not in ['arabic', 'english']:
+        return "Invalid language", 404
+
+    
+    if request.method == "GET":
+        return render_template(f"word_translation.html", show_result=False, language=language)
+    else:
+        
+        print(request.files)
+        
+        # if 'images' not in request.files:
+        #     return "No file was uploaded"
+        
+        files = request.files.getlist('images')
+        
+        for file in files:
+            if file.filename != "":
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+        
+        return "saved"
+
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
