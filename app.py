@@ -21,7 +21,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 import string
 from collections import namedtuple
-
+import consts
 FileItem = namedtuple('FileItem', ['filename', 'file'])
 # import spacy
 
@@ -129,8 +129,8 @@ def get_image_predictions_multi(image_paths, model, encoder) -> tuple:
 def translate_text(input_text, source_lang, target_lang):
     # Check if input_text is a single character and translate manually
     if source_lang=='en':
-        if len(input_text) == 1 and input_text.lower() in single_char_translations:
-            return single_char_translations[input_text.lower()]
+        if len(input_text) == 1 and input_text.lower() in consts.en_ar_map:
+            return consts.en_ar_map[input_text.lower()]
 
     # For words and sentences, use MarianMT for translation
     model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
@@ -167,22 +167,23 @@ nltk.download('punkt')
 accumulated_letters_asl = []
 accumulated_words_asl = []
 
-def classify_and_accumulate_letter_asl(asl_image_path, asl_model, delimiter=None):
-    """Classify a single image and accumulate the predicted letter, handling word boundaries."""
+def classify_and_accumulate_letters_asl(asl_image_paths, asl_model, delimiter=None):
+    """Classify a list of images and accumulate the predicted letters, handling word boundaries."""
     global accumulated_letters_asl
 
-    if delimiter is not None:
-        finalize_and_accumulate_word_asl()  # Finalize current word if a delimiter is provided
-    else:
-        predicted_asl_letter = predict_image_asl(asl_model, asl_image_path)
-        predicted_asl_letter = predicted_asl_letter.item() if isinstance(predicted_asl_letter, np.ndarray) else predicted_asl_letter
-
-        # Check if the predicted letter is valid before appending
-        if predicted_asl_letter:
-            accumulated_letters_asl.append(predicted_asl_letter)
-            print(f'Accumulated letters so far: {accumulated_letters_asl}')
+    for asl_image_path in asl_image_paths:
+        if delimiter is not None:
+            finalize_and_accumulate_word_asl()  # Finalize the current word if a delimiter is provided
         else:
-            print(f'No valid prediction for image: {asl_image_path}')
+            predicted_asl_letter = predict_image_asl(asl_model, asl_image_path)
+            predicted_asl_letter = predicted_asl_letter.item() if isinstance(predicted_asl_letter, np.ndarray) else predicted_asl_letter
+
+            # Check if the predicted letter is valid before appending
+            if predicted_asl_letter:
+                accumulated_letters_asl.append(predicted_asl_letter)
+                print(f'Accumulated letters so far: {accumulated_letters_asl}')
+            else:
+                print(f'No valid prediction for image: {asl_image_path}')
 
 
 # Global variable to hold accumulated words for the sentence
@@ -214,7 +215,7 @@ def construct_final_sentence():
     else:
         print('No words accumulated to form a sentence.')
 
-def translate_text_sen(sentence, source_lang='en', target_lang='ar'):
+def translate_text(sentence, source_lang='en', target_lang='ar'):
     """Translate a given sentence from the source language to the target language."""
     model_name = f'Helsinki-NLP/opus-mt-{source_lang}-{target_lang}'
     tokenizer = MarianTokenizer.from_pretrained(model_name)
@@ -236,18 +237,18 @@ def finalize_and_translate_sentence_asl():
     else:
         sentence = ''
 
-    # print(f'Final sentence to translate: "{sentence}"')  # Debug output
+    print(f'Final sentence to translate: "{sentence}"')  # Debug output
 
     # Remove the period for translation purposes
     sentence_to_translate = sentence.rstrip('.')
 
     # Translate the constructed sentence to Arabic without the period
-    translated_sentence_asl = translate_text_sen(sentence_to_translate, source_lang='en', target_lang='ar')
+    translated_sentence_asl = translate_text(sentence_to_translate, source_lang='en', target_lang='ar')
     
     # Remove any unwanted parentheses in the translation
     translated_sentence_asl = translated_sentence_asl.replace('(', '').replace(')', '')
     
-    # print(f'Translated sentence: "{translated_sentence_asl}"')  # Debug output
+    print(f'Translated sentence: "{translated_sentence_asl}"')  # Debug output
 
     # Re-attach the period after translation
     translated_sentence_asl += '.'
@@ -281,10 +282,6 @@ def split_into_words(letter_sequence):
     doc = nlp(letter_sequence)
     words = [token.text for token in doc]
     return words
-
-# Example usage
-accumulated_letters_asl = []  # Initialize the global list for accumulating letters
-
 
 def classify_and_translate_images(arsl_image_paths, arsl_model):
     # Step 1: Predict the ArSL letters from the input images

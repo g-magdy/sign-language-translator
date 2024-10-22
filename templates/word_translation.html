@@ -94,19 +94,25 @@
 
     // Handle file selection via file input
     fileInput.addEventListener('change', function(event) {
-        Array.from(event.target.files).forEach(file => {
-            // Check if the file is already in the list to avoid duplicates
-            if (!selectedFiles.some(f => f.name === file.name)) {
-                selectedFiles.push(file);  // Add new files to the list
+    // Check if the event is triggered by a file input click
+    if (event.target !== fileInput) {
+        return;  // Ignore this if the event isn't triggered by the drag-and-drop functionality
+    }
 
-                // Add file names to the displayed file list
-                const li = document.createElement('li');
-                li.textContent = file.name;
-                fileListElement.appendChild(li);
-            }
-        });
-        updateFileInput(selectedFiles);  // Update hidden input
+    Array.from(event.target.files).forEach(file => {
+        // Check if the file is already in the list to avoid duplicates
+        if (!selectedFiles.some(f => f.name === file.name)) {
+            selectedFiles.push(file);  // Add new files to the list
+
+            // Add file names to the displayed file list
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            fileListElement.appendChild(li);
+        }
     });
+    updateFileInput(selectedFiles);  // Update hidden input
+    });
+
 
     // Update the file order hidden input when the form is submitted
     document.getElementById('upload-form').addEventListener('submit', function(event) {
