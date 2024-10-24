@@ -13,27 +13,18 @@
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">
-        <img src="../static/logo.svg" class="bi me-2" height="40">
-        Sign Language Helper
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/">Home</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Image to Character
+            <a class="navbar-brand" href="/">
+              <img src="../static/logo.svg" class="bi me-2" height="40">
+              <span style="font-size: 24px; font-weight: bold;">SpellSigns</span>
             </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/img/english">English</a></li>
-              <li><a class="dropdown-item" href="/img/arabic">Arabic</a></li>
-            </ul>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+              aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -42,18 +33,18 @@
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/txt/english">English</a></li>
               <li><a class="dropdown-item" href="/txt/arabic">Arabic</a></li>
+              <li><a class="dropdown-item" href="/txt/french">French</a></li>
+              <li><a class="dropdown-item" href="/txt/chinese">Chinese</a></li>
+              <li><a class="dropdown-item" href="/txt/brazilian">Brazilian</a></li>
+              <li><a class="dropdown-item" href="/txt/indonesian">Indonesian</a></li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Sign to sign
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/word/english">English</a></li>
-              <li><a class="dropdown-item" href="/word/arabic">Arabic</a></li>
-            </ul>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/cross_language">Cross-language</a>
           </li>
-          
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/sign_to_sign">Sign to Sign</a>
+          </li>
         </ul>
       </div>
     </div>

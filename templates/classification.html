@@ -5,35 +5,77 @@
     <h1 class="text-center text-primary my-3">{{ language|capitalize }} Sign Language Classification</h1>
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
+
+            <!-- Alphabet Dropdown Section -->
+            <div class="card shadow mb-4">
                 <div class="card-body">
-
-                    <form method="POST" action="/img/{{ language }}" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <input type="file" class="form-control" name="file" accept="image/*">
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Upload</button>
-                        </div>
-                    </form>
-
-                    <!-- Display the processed image if it exists -->
-                    {% if show_result %}
-                    <div class="mt-4 text-center">
-                        <h5>Canny Edges of {{edges_image}}</h5>
-                        <img src="{{ url_for('uploaded_file', filename=edges_image) }}" class="img-fluid" alt="Edges image">
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <h5>Prediction Result:</h5>
-                        <p>Predicted Class: {{ predicted_class }}</p>
-                    </div>
-                    {% endif %}
-
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Choose a Letter</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#alphabetDropdown" aria-expanded="false" aria-controls="alphabetDropdown">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="alphabetDropdown">
+                        <form method="POST" action="/txt/{{ language }}" enctype="multipart/form-data" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <select class="form-control custom-dropdown" name="alphabet">
+                                    <option value="" disabled selected>Select a letter</option>
+                                    {% for letter in alphabet %}
+                                        <option value="{{ letter }}">{{ letter }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>                                        
                 </div>
             </div>
+
+            <!-- Name Input Section -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Enter Your Name</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#nameInput" aria-expanded="false" aria-controls="nameInput">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="nameInput">
+                        <form method="POST" action="/name/{{ language }}" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <input type="text" class="form-control name-input" name="name" placeholder="Enter your name here" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
+<!-- Optional Custom CSS -->
+<style>
+    /* Style for the name input card */
+    .name-input, .custom-dropdown {
+        width: 100%; /* Full width for better appearance */
+        border-radius: 50px;
+        padding: 10px;
+        font-size: 1.2rem; /* Match font size */
+    }
+    /* Add a slight hover effect for the name input */
+    .name-input:hover, .custom-dropdown:hover {
+        background-color: #f0f8ff;
+        border-color: #007bff;
+    }
+
+    /* Decrease the width of the dropdown */
+    
+</style>
 
 {% endblock content %}
