@@ -5,35 +5,433 @@
     <h1 class="text-center text-primary my-3">{{ language|capitalize }} Sign Language Classification</h1>
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
+            <!-- Alphabet Dropdown Section -->
+            <div class="card shadow mb-4">
                 <div class="card-body">
-
-                    <form method="POST" action="/img/{{ language }}" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <input type="file" class="form-control" name="file" accept="image/*">
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Choose a Letter</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#alphabetDropdown" aria-expanded="false" aria-controls="alphabetDropdown">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="alphabetDropdown">
+                        <form id="letterForm" method="POST" action="/txt/{{ language }}" enctype="multipart/form-data" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <select class="form-control custom-dropdown" name="alphabet" required>
+                                    <option value="" disabled selected>Select a letter</option>
+                                    {% for letter in alphabet %}
+                                        <option value="{{ letter }}">{{ letter }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Show sign</button>
+                            <button type="button" class="btn btn-primary ms-2" id="resetLetterButton">Reset</button>
+                        </form>
+                        <div id="letterImageContainer" style="display: none;">
+                            <h5 id="letterImageHeading">Sign image of</h5>
+                            <div id="letterImageWrapper" class="text-center"></div><br><br>
+                            <button type="button" class="btn btn-primary" id="learnButton">Learn</button>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Upload</button>
+                        
+                        <!-- Camera Capture Section -->
+                        <div id="cameraSection" style="display: none;">
+                            <video id="video" width="600" height="480" autoplay></video>
+                            <button id="captureToggle" class="btn btn-primary">Turn On Camera</button>
+                            <button id="capturePhoto" class="btn btn-secondary" style="display:none;">Capture Photo</button> <!-- Hide initially -->
+                            <canvas id="canvas" width="480" height="360" style="display:none;"></canvas>
+                            <img id="photo" alt="Your sign will appear here." style="display:none;"/> <!-- Hide photo until captured -->
+                            <button id="upload" class="btn btn-primary">Upload Photo</button>
+                            <div id="predictionResult" style="display: none;"></div> <!-- Area to show prediction result -->
+
                         </div>
-                    </form>
-
-                    <!-- Display the processed image if it exists -->
-                    {% if show_result %}
-                    <div class="mt-4 text-center">
-                        <h5>Canny Edges of {{edges_image}}</h5>
-                        <img src="{{ url_for('uploaded_file', filename=edges_image) }}" class="img-fluid" alt="Edges image">
                     </div>
+                </div>
+            </div>
+            
 
-                    <div class="mt-4 text-center">
-                        <h5>Prediction Result:</h5>
-                        <p>Predicted Class: {{ predicted_class }}</p>
+            <!-- Name Input Section -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Enter Your Name</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#nameDropdown" aria-expanded="false" aria-controls="nameDropdown">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="nameDropdown">
+                        <form method="POST" action="/name/{{ language }}" class="d-flex align-items-center mb-3" id="nameForm">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <input type="text" class="form-control name-input" name="name" placeholder="Enter your name here" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Show sign</button>
+                            <button type="button" class="btn btn-primary ms-2" id="nameResetButton">Reset</button>
+                        </form>
+                        <!-- Image Container Section -->
+                        <div id="nameImageContainer" style="display: none;">
+                            <h5>Character Images</h5>
+                            <div id="characterImages"></div> <!-- This will hold the images -->
+                        </div>
                     </div>
-                    {% endif %}
-
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('letterForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const letterImageContainer = document.getElementById('letterImageContainer');
+        const letterImageWrapper = document.getElementById('letterImageWrapper');
+        const letterImageHeading = document.getElementById('letterImageHeading');
+        
+        letterImageContainer.style.display = "block"; // Show the image container
+        letterImageWrapper.innerHTML = ''; // Clear previous images
+
+        // Check if there's a valid image path
+        if (data.image_path) {
+            // Update the heading with the selected letter
+            letterImageHeading.textContent = `Sign image of ${data.selected_letter}`;
+
+            // Create Image Element
+            const imgElement = document.createElement("img");
+            imgElement.src = data.image_path; // Set the source to the returned image path
+            imgElement.alt = `Sign language for ${data.selected_letter}`; // Alt text for accessibility
+            imgElement.className = "img-fluid"; // Add any desired classes for styling
+
+            // Append the image to the wrapper
+            letterImageWrapper.appendChild(imgElement);
+        } else {
+            letterImageWrapper.innerHTML = '<p>No image found.</p>'; // Handle case where no image is found
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+    // Reset button functionality
+document.getElementById("resetLetterButton").addEventListener("click", function() {
+    document.querySelector("select[name='alphabet']").selectedIndex = 0;
+    
+    // Hide and clear letter image container
+    const letterImageContainer = document.getElementById("letterImageContainer");
+    letterImageContainer.style.display = "none";
+    letterImageContainer.innerHTML = "";
+
+});
+
+let isCameraOn = false;
+let stream;
+const selectedLanguage = "{{ language }}";  // Use Jinja2 to insert the language
+
+// Show camera section when the learn button is clicked
+document.getElementById('learnButton').addEventListener('click', () => {
+    const cameraSection = document.getElementById('cameraSection');
+    cameraSection.style.display = "block"; 
+});
+
+// Toggle the webcam on and off
+document.getElementById('captureToggle').addEventListener('click', () => {
+    const video = document.getElementById('video');
+    if (!isCameraOn) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(mediaStream => {
+                stream = mediaStream; 
+                video.srcObject = stream;
+                isCameraOn = true;
+                document.getElementById('captureToggle').innerText = "Turn Off Camera"; 
+                document.getElementById('capturePhoto').style.display = "inline-block"; 
+            })
+            .catch(err => {
+                console.error("Error accessing webcam: ", err);
+            });
+    } else {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        isCameraOn = false;
+        document.getElementById('captureToggle').innerText = "Turn On Camera"; 
+        video.srcObject = null; 
+        document.getElementById('capturePhoto').style.display = "none"; 
+        document.getElementById('upload').style.display = "none"; // Hide upload button
+    }
+});
+
+// Capture photo from the webcam
+document.getElementById('capturePhoto').addEventListener('click', () => {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const photo = document.getElementById('photo');
+
+    if (isCameraOn) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imgData = canvas.toDataURL('image/png');
+        photo.setAttribute('src', imgData);
+        photo.style.display = "block"; 
+        document.getElementById('upload').style.display = "inline-block"; // Show upload button
+    }
+});
+// Upload captured photo for prediction
+document.getElementById('upload').addEventListener('click', () => {
+    const canvas = document.getElementById('canvas');
+
+    // Get the selected letter from the dropdown inside the event listener
+    const selectedLetter = document.querySelector('select[name="alphabet"]').value;
+
+    canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append('image', blob, 'captured.png'); // Ensure the name matches your Flask app
+
+        fetch(`/txt/${selectedLanguage}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const predictionResult = document.getElementById('predictionResult');
+            // Alert the predicted label and selected letter for debugging
+            const isCorrect = data.predicted_label.trim() === selectedLetter.trim(); // Compare predicted label with selected letter
+            predictionResult.innerText = `Prediction: ${data.predicted_label}, Status: ${isCorrect ? 'Correct' : 'Not Correct'}`;
+            predictionResult.style.display = "block"; 
+        })
+        .catch(error => console.error('Error uploading photo:', error));
+    }, 'image/png');
+});
+
+
+document.getElementById('nameForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent default form submission
+    const nameInput = document.querySelector("input[name='name']");
+    const nameValue = nameInput.value.trim();
+
+    // Check if the entered name is a single word (no spaces)
+    if (nameValue.includes(" ")) {
+        alert("Please enter a single name."); // Alert the user
+        return; // Stop the form submission
+    }
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const characterImagesContainer = document.getElementById('characterImages');
+        characterImagesContainer.innerHTML = ''; // Clear previous images
+
+        if (Array.isArray(data.images) && data.images.length > 0) {
+            document.getElementById('nameImageContainer').style.display = "block"; // Show the container
+
+            data.images.forEach((image, index) => {
+                // Create a wrapper div for each title-image pair
+                const wrapperDiv = document.createElement("div");
+                wrapperDiv.className = "text-center my-3"; // Center and add spacing
+
+                // Title
+                const titleElement = document.createElement("h5");
+                titleElement.textContent = `Sign language for: ${data.letters[index]}`;
+                titleElement.className = "mt-2"; // Optional extra styling
+
+                // Image
+                const imgElement = document.createElement("img");
+                imgElement.src = image;
+                imgElement.alt = `Sign language for ${data.letters[index]}`;
+                imgElement.className = "img-fluid mt-1"; // Responsive styling
+                imgElement.style.width = "800px"; // Set a specific width to enlarge
+                imgElement.style.height = "auto"; // Maintain aspect ratio
+
+                // Learn button
+                const learnButton = document.createElement("button");
+                learnButton.textContent = "Learn";
+                learnButton.className = "btn btn-primary mt-2";
+
+                // Create a camera section for this specific letter
+                const letter = data.letters[index]; // Use the letter for the ID
+                const cameraSection = document.createElement("div");
+                cameraSection.id = `cameraSection${letter}`; // Unique ID based on letter
+                cameraSection.style.display = "none"; // Initially hidden
+                cameraSection.innerHTML = `
+                    <video id="video${letter}" width="600" height="480" autoplay></video>
+                    <button id="captureToggle${letter}" class="btn btn-primary">Turn On Camera</button>
+                    <button id="capturePhoto${letter}" class="btn btn-secondary" style="display:none;">Capture Photo</button>
+                    <canvas id="canvas${letter}" width="600" height="480" style="display:none;"></canvas>
+                    <img id="photo${letter}" alt="Your sign will appear here." style="display:none;"/> 
+                    <button id="upload${letter}" class="btn btn-primary" style="display:none;">Upload Photo</button>
+                    <div id="predictionResult${letter}" style="display: none;"></div> <!-- Area to show prediction result -->
+                `;
+
+                let isCameraOn = false;
+                let stream; // Move the stream declaration here
+
+                // Add an event listener for the "Learn" button
+                learnButton.addEventListener('click', () => {
+                    // Hide any other camera sections
+                    const existingSections = document.querySelectorAll('[id^="cameraSection"]');
+                    existingSections.forEach(section => section.style.display = "none");
+
+                    // Show the camera section associated with this letter
+                    cameraSection.style.display = "block"; // Show the camera section
+
+                    // Toggle camera on and off for the specific letter
+                    const toggleButton = document.getElementById(`captureToggle${letter}`);
+                    toggleButton.addEventListener('click', () => {
+                        const video = document.getElementById(`video${letter}`);
+                        if (!isCameraOn) {
+                            navigator.mediaDevices.getUserMedia({ video: true })
+                                .then(mediaStream => {
+                                    stream = mediaStream; // Store the stream here
+                                    video.srcObject = stream;
+                                    video.play().catch(err => console.error("Error playing video: ", err));
+                                    isCameraOn = true;
+                                    toggleButton.innerText = "Turn Off Camera";
+                                    document.getElementById(`capturePhoto${letter}`).style.display = "inline-block"; 
+                                })
+                                .catch(err => {
+                                    console.error("Error accessing webcam: ", err);
+                                });
+                        } else {
+                            if (stream) {
+                                stream.getTracks().forEach(track => track.stop());
+                            }
+                            isCameraOn = false;
+                            toggleButton.innerText = "Turn On Camera"; 
+                            video.srcObject = null; 
+                            document.getElementById(`capturePhoto${letter}`).style.display = "none"; 
+                            document.getElementById(`upload${letter}`).style.display = "none"; // Hide upload button
+                        }
+                    });
+
+                    // Capture photo from the webcam
+                    document.getElementById(`capturePhoto${letter}`).addEventListener('click', () => {
+                        const canvas = document.getElementById(`canvas${letter}`);
+                        const context = canvas.getContext('2d');
+                        const video = document.getElementById(`video${letter}`);
+                        const photo = document.getElementById(`photo${letter}`);
+
+                        photo.style.width = "600px"; // Adjusted to make the uploaded photo larger
+                        photo.style.height = "480px"
+                        if (isCameraOn) {
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const imgData = canvas.toDataURL('image/png');
+
+                            photo.setAttribute('src', imgData);
+                            photo.style.display = "block"; 
+                            document.getElementById(`upload${letter}`).style.display = "inline-block"; 
+                        }
+                    });
+
+                    // Upload captured photo for prediction
+                    document.getElementById(`upload${letter}`).addEventListener('click', () => {
+                        const canvas = document.getElementById(`canvas${letter}`);
+
+                        canvas.toBlob((blob) => {
+                            const formData = new FormData();
+                            formData.append('image', blob, 'captured.png'); // Ensure the name matches your Flask app
+
+                            fetch(`/name/${selectedLanguage}`, {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                const predictionResult = document.getElementById(`predictionResult${letter}`);
+                                const selectedLetter = letter; // Get the letter corresponding to the current section
+                                const isCorrect = data.predicted_label.trim() === selectedLetter.trim(); // Compare predicted label with selected letter
+                                predictionResult.innerText = `Prediction: ${data.predicted_label}, Status: ${isCorrect ? 'Correct' : 'Not Correct'}`;
+                                predictionResult.style.display = "block";
+                            })
+                            .catch(error => console.error('Error uploading photo:', error));
+                        }, 'image/png');
+                    });
+                });
+
+                // Append title, image, learn button, and camera section to the wrapper div
+                wrapperDiv.appendChild(titleElement);
+                wrapperDiv.appendChild(imgElement);
+                wrapperDiv.appendChild(learnButton);
+                wrapperDiv.appendChild(cameraSection); // Append the camera section to the wrapper
+
+                // Append the wrapper div to the main container
+                characterImagesContainer.appendChild(wrapperDiv);
+            });
+        } else {
+            alert("No images found.");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+
+    // Reset button functionality for name input
+    document.getElementById("nameResetButton").addEventListener("click", function() {
+        document.querySelector("input[name='name']").value = "";
+        const nameImageContainer = document.getElementById("nameImageContainer");
+        nameImageContainer.style.display = "none"; // Hides the image container
+        document.getElementById("characterImages").innerHTML = ""; // Clear the contents of the image container
+    });
+</script>
+
+<!-- Optional Custom CSS -->
+<style>
+    /* Style for the name input card */
+    .name-input, .custom-dropdown {
+        width: 90%; /* Full width for better appearance */
+        border-radius: 50px;
+        padding: 10px;
+        font-size: 1.2rem; /* Match font size */
+    }
+    /* Add a slight hover effect for the name input */
+    .name-input:hover, .custom-dropdown:hover {
+        background-color: #f0f8ff;
+        border-color: #007bff;
+    }
+
+    #characterImages {
+    display: block; /* Change from flex to block */
+    margin: 0 auto; /* Center the container */
+}
+
+#characterImages div {
+    display: block; /* Ensures each wrapper div is a block element */
+    margin-bottom: 20px; /* Space between each title-image pair */
+}
+
+#characterImages img {
+    width: 200px; /* Set width */
+    height: 200px; /* Set height */
+    object-fit: cover; /* Maintain aspect ratio without distortion */
+    display: block; /* Ensures the image is a block element */
+    margin: 0 auto; /* Centers the image */
+}
+
+</style>
 
 {% endblock content %}
