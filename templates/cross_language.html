@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+{% block title %}Cross language{% endblock title %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary my-3">Cross language</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- Combined Dropdowns Section -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <!-- Source Language Dropdown -->
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Select Source Language</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#sourceLanguage" aria-expanded="false" aria-controls="sourceLanguage">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="sourceLanguage">
+                        <form method="POST" action="/language-selection" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <select class="form-control custom-dropdown" name="source_language" id="sourceLanguageDropdown" onchange="updateAlphabet()">
+                                    <option value="" disabled selected>Select Source Language</option>
+                                    <option value="english">English</option>
+                                    <option value="arabic">Arabic</option>
+                                    <option value="french">French</option>
+                                    <option value="chinese">Chinese</option>
+                                    <option value="brazilian">Brazilian</option>
+                                    <option value="indonesian">Indonesian</option>
+                                    <!-- Add more languages here -->
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Alphabet Dropdown Section -->
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Select Alphabet</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#alphabetDropdown" aria-expanded="false" aria-controls="alphabetDropdown">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="alphabetDropdown">
+                        <form method="POST" action="/alphabet-selection" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <select class="form-control custom-dropdown" name="alphabet" id="alphabetDropdownSelect">
+                                    <option value="" disabled selected>Select an Alphabet</option>
+                                    <!-- Options will be populated based on selected source language -->
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Target Language Dropdown -->
+                    <h5 class="card-title d-flex justify-content-between align-items-center">
+                        <span>Select Target Language</span>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#targetLanguage" aria-expanded="false" aria-controls="targetLanguage">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </h5>
+                    <div class="collapse" id="targetLanguage">
+                        <form method="POST" action="/target-language-selection" class="d-flex align-items-center mb-3">
+                            <div class="mb-3 me-2 flex-grow-1">
+                                <select class="form-control custom-dropdown" name="target_language">
+                                    <option value="" disabled selected>Select Target Language</option>
+                                    <option value="english">English</option>
+                                    <option value="arabic">Arabic</option>
+                                    <option value="french">French</option>
+                                    <option value="chinese">Chinese</option>
+                                    <option value="brazilian">Brazilian</option>
+                                    <option value="indonesian">Indonesian</option>
+                                    <!-- Add more languages here -->
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                         <button class="btn btn-primary mt-3 btn-lg" type="submit">Submit</button>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Optional Custom CSS -->
+<style>
+    .custom-dropdown {
+        width: 100%; /* Full width for better appearance */
+        border-radius: 50px;
+        padding: 10px;
+        font-size: 1.2rem; /* Match font size */
+    }
+
+    .custom-dropdown:hover {
+        background-color: #f0f8ff;
+        border-color: #007bff;
+    }
+</style>
+
+<!-- JavaScript for Dynamic Alphabet Update -->
+<script>
+    const alphabets = {
+        'english': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
+        'arabic': ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي']
+        // Add more languages and their alphabets here
+    };
+
+    function updateAlphabet() {
+        const sourceLanguage = document.getElementById('sourceLanguageDropdown').value;
+        const alphabetDropdown = document.getElementById('alphabetDropdownSelect');
+        
+        // Clear existing options
+        alphabetDropdown.innerHTML = '<option value="" disabled selected>Select an Alphabet</option>';
+
+        // Populate dropdown based on selected language
+        if (sourceLanguage && alphabets[sourceLanguage]) {
+            alphabets[sourceLanguage].forEach(letter => {
+                const option = document.createElement('option');
+                option.value = letter;
+                option.textContent = letter;
+                alphabetDropdown.appendChild(option);
+            });
+        }
+    }
+</script>
+
+{% endblock content %}
